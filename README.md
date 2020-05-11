@@ -7,15 +7,10 @@
 │   └── vocab.txt      
 ├── config.py      
 ├── data      
-│   ├── jigsaw-toxic-comment-train-processed-seqlen128.csv      
-│   ├── jigsaw-toxic-comment-train.csv                          (*)      
-│   ├── jigsaw-unintended-bias-train-processed-seqlen128.csv      
-│   ├── jigsaw-unintended-bias-train.csv                        (*)      
-│   ├── sample_submission.csv      
-│   ├── test-processed-seqlen128.csv      
-│   ├── test.csv                                                (*)      
-│   ├── validation-processed-seqlen128.csv      
-│   └── validation.csv                                          (*)      
+│   ├── jigsaw-toxic-comment-train.csv      
+│   ├── jigsaw-unintended-bias-train.csv      
+│   ├── test.csv      
+│   └── validation.csv      
 ├── dataset.py      
 ├── docker.sh      
 ├── engine.py      
