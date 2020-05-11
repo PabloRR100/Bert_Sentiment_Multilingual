@@ -4,6 +4,11 @@ import torch
 import torch.nn as nn
 from tqdm import tqdm
 
+"""
+LOGIC TO TRAIN AND EVALUATE 1 EPOCH
+"""
+
+
 # TPUs for PyTorch
 if config.TPUs:
     import torch_xla.core.xla_model as xm

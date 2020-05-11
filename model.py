@@ -1,10 +1,13 @@
 
-import config
-
 import torch
 import torch.nn as nn
-
+import config
 import transformers
+
+
+"""
+EXTENDES TRANSFORMERS BERT MODEL
+"""
 
 
 class BERTBaseUncased(nn.Module):
