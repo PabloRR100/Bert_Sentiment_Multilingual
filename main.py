@@ -27,7 +27,6 @@ DEVICE = 'cuda' if CUDA else 'cpu'
 WORKERS = torch.multiprocessing.cpu_count()
 print_current_config(CUDA, N_GPU, DEVICE, WORKERS)
 
-exit()
 
 # TPUs for PyTorch
 if config.TPUs:
@@ -55,7 +54,7 @@ def run():
     # Read Data
     
     df1 = pd.read_csv('data/jigsaw-toxic-comment-train.csv', usecols=['comment_text', 'toxic'])
-    df2 = pd.read_csv('data/jigsaw-unintended-bias-train.csv', usecols=['comment_text', 'toxic'])
+    df2 = pd.read_csv('data/jigsaw-unintended-bias-train.csv', usecols=['comment_text', 'toxic'], engine='python') # don't know why it was breaking with default C parser
     df_train = pd.concat([df1,df2], axis=0).reset_index(drop=True)
     df_valid = pd.read_csv('data/validation.csv')
     
@@ -137,8 +136,9 @@ def run():
     )
 
     if not config.TPUs:
-        model = nn.DataParallel(model)
-
+        if N_GPU > 1:
+            model = nn.DataParallel(model)
+    
     # Training loop
 
     best_score = 0
@@ -169,4 +169,5 @@ def run():
 
 
 if __name__ == "__main__":
+    print('[INFO]: Start training')
     run()
