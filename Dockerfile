@@ -19,4 +19,5 @@ RUN rm requirements.txt
 
 EXPOSE ${PORT}
 
+# CMD ["bin", "bash"]
 CMD ["jupyter", "lab", "--ip='0.0.0.0'", "--port=${PORT}", "--no-browser", "--allow-root"]
