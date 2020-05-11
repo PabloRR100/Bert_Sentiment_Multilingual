@@ -8,17 +8,16 @@
 ├── config.py
 ├── data
 │   ├── jigsaw-toxic-comment-train-processed-seqlen128.csv
-│   ├── jigsaw-toxic-comment-train.csv
+│   ├── jigsaw-toxic-comment-train.csv                          (*)
 │   ├── jigsaw-unintended-bias-train-processed-seqlen128.csv
-│   ├── jigsaw-unintended-bias-train.csv
+│   ├── jigsaw-unintended-bias-train.csv                        (*)
 │   ├── sample_submission.csv
 │   ├── test-processed-seqlen128.csv
-│   ├── test.csv
+│   ├── test.csv                                                (*)
 │   ├── validation-processed-seqlen128.csv
-│   └── validation.csv
+│   └── validation.csv                                          (*)
 ├── dataset.py
 ├── docker.sh
 ├── engine.py
 ├── model.py
-├── pytorch-xla-env-setup.py
 └── train.py
