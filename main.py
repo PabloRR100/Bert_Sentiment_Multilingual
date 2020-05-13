@@ -2,7 +2,6 @@
 import torch
 import config
 import dataset
-from model import BERTBaseUncased
 from train import train_fn, eval_fn
 from utils import print_current_config
 from beautifultable import BeautifulTable as BT
@@ -14,6 +13,7 @@ from sklearn import metrics, model_selection
 import torch.nn as nn
 import torch.optim as optim
 import torch.multiprocessing
+from model import BERTBaseUncased, DistilBERTBaseUncased
 
 from transformers import AdamW
 from transformers import get_linear_schedule_with_warmup
@@ -53,11 +53,15 @@ def run():
     
     # Read Data
     
-    df1 = pd.read_csv('data/jigsaw-toxic-comment-train.csv', usecols=['comment_text', 'toxic'])
-    df2 = pd.read_csv('data/jigsaw-unintended-bias-train.csv', usecols=['comment_text', 'toxic'], engine='python') # don't know why it was breaking with default C parser
-    df_train = pd.concat([df1,df2], axis=0).reset_index(drop=True)
-    df_valid = pd.read_csv('data/validation.csv')
+    # df1 = pd.read_csv('data/jigsaw-toxic-comment-train.csv', usecols=['comment_text', 'toxic'])
+    # df2 = pd.read_csv('data/jigsaw-unintended-bias-train.csv', usecols=['comment_text', 'toxic'], engine='python') # don't know why it was breaking with default C parser
+    # df_train = df1 # pd.concat([df1,df2], axis=0).reset_index(drop=True)
+    # df_valid = pd.read_csv('data/validation.csv')
     
+    # Subsample
+    df_train = pd.read_csv('data/jigsaw-toxic-comment-train-small.csv', usecols=['comment_text', 'toxic'])
+    df_valid = pd.read_csv('data/validation-small.csv', usecols=['comment_text', 'toxic']) 
+
     # Preprocess
     
     train_dataset = dataset.BERTDataset(
@@ -109,7 +113,13 @@ def run():
 
     # Machine Configuration
 
-    model = BERTBaseUncased()
+    if config.MODEL == 'bert':
+        model = BERTBaseUncased()
+    elif config.MODEL == 'distil-bert':
+        model = DistilBERTBaseUncased()
+    else:
+        print('Model chosen in config not valid')
+        exit()
     model.to(device)
     
     # Optimizer Configuration 
@@ -169,5 +179,6 @@ def run():
 
 
 if __name__ == "__main__":
+    
     print('[INFO]: Start training')
     run()

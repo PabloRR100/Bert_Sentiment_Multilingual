@@ -6,6 +6,7 @@ PORT="8899:8899"
 IMAGE="pablorr10/bert-toxic"
 
 # Start a docker container 
+docker run --rm -dit -v ${PWD}:/app --name bash-remote ${IMAGE} bash
 docker run --rm -dit -v ${PWD}:/app --name bash-remote --runtime nvidia ${IMAGE} bash
 
 # Start a jupyter notebook

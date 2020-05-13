@@ -18,6 +18,24 @@ def loss_fn(outputs, targets):
     return nn.BCEWithLogitsLoss()(outputs, targets.view(-1, 1))
 
 
+def forward_pass(model, ids, mask, token_type_ids):
+    """ 
+    Abstract forward pass given inputs and model being used 
+    """
+    if config.MODEL == 'bert':
+        return model(
+            ids=ids,
+            mask=mask,
+            token_type_ids=token_type_ids
+        )
+    elif config.MODEL == 'distil-bert':
+        return model(
+        ids=ids,
+        mask=mask
+    )
+    return None
+    
+
 def train_fn(data_loader, model, optimizer, device, scheduler):
     '''
     Train 1 epoch
@@ -50,12 +68,10 @@ def train_fn(data_loader, model, optimizer, device, scheduler):
         else:
             optimizer.zero_grad()
 
-        outputs = model(
-            ids=ids,
-            mask=mask,
-            token_type_ids=token_type_ids
-        )
+        # Forward Pass
+        outputs = forward_pass(model, ids, mask, token_type_ids)
 
+        # Backward Pass
         loss = loss_fn(outputs, targets)
         loss.backward()
         if config.TPUs:
