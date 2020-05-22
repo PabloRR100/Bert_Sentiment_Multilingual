@@ -30,6 +30,8 @@ class BERTDataset:
             max_length=self.max_len,
             pad_to_max_length=True
         )
+        
+        # [self.tokenizer.ids_to_tokens[i] for i in [101, 32821, 119, 119]] -> Translate back from genereated 'inputs' into tokens
 
         ids = inputs["input_ids"]
         mask = inputs["attention_mask"]

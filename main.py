@@ -25,7 +25,7 @@ from torch.utils.data.distributed import DistributedSampler
 CUDA = torch.cuda.is_available()
 N_GPU = torch.cuda.device_count()
 DEVICE = 'cuda' if CUDA else 'cpu'
-WORKERS = torch.multiprocessing.cpu_count()
+WORKERS = 0 # torch.multiprocessing.cpu_count()
 print_current_config(CUDA, N_GPU, DEVICE, WORKERS)
 
 
@@ -35,6 +35,7 @@ if config.TPUs:
     import torch_xla.core.xla_model as xm
     import torch_xla.distributed.xla_multiprocessing as xmp
     import torch_xla.distributed.parallel_loader as pl
+
 
 def run():
     '''
@@ -63,6 +64,11 @@ def run():
     df_train = pd.read_csv('data/jigsaw-toxic-comment-train-small.csv', usecols=['comment_text', 'toxic'])
     df_valid = pd.read_csv('data/validation-small.csv', usecols=['comment_text', 'toxic']) 
 
+    df_train = df_train.iloc[:320,:]
+    df_valid = df_valid.iloc[:32,:]
+    print('Train: ', df_train.shape)
+    print('Valid: ', df_valid.shape)
+
     # Preprocess
     
     train_dataset = dataset.BERTDataset(
@@ -77,6 +83,7 @@ def run():
 
     drop_last=False
     train_sampler, valid_sampler = None, None
+
     if config.TPUs:
         drop_last=True
         train_sampler = DistributedSampler(
@@ -139,7 +146,7 @@ def run():
         num_train_steps /= n_TPUs
         lr *= n_TPUs
 
-    criterion = nn.CrossEntropyLoss() ## TODO: Test Cross Entrypo
+    criterion = nn.BCEWithLogitsLoss()
     optimizer = AdamW(optimizer_parameters, lr=lr)
     scheduler = get_linear_schedule_with_warmup(
         optimizer,

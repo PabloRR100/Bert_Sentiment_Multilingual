@@ -65,7 +65,7 @@ def train_fn(data_loader, model, optimizer, criterion, device, scheduler):
         ids = ids.to(device, dtype=torch.long)
         token_type_ids = token_type_ids.to(device, dtype=torch.long)
         mask = mask.to(device, dtype=torch.long)
-        targets = targets.to(device, dtype=torch.float)
+        targets = targets.to(device, dtype=torch.float)                     # (batch_size)
 
         if config.TPUs:
             xm.optimizer.zero_grad(optimizer)
@@ -73,7 +73,9 @@ def train_fn(data_loader, model, optimizer, criterion, device, scheduler):
             optimizer.zero_grad()
 
         # Forward Pass
-        outputs = forward_pass(model, ids, mask, token_type_ids)
+                            # (outputs.shape, outputs.dtype)              (torch.Size([4, 1]), torch.float32)
+                            # (targets.shape, targets.dtype)              (torch.Size([4]), torch.float32)
+        outputs = forward_pass(model, ids, mask, token_type_ids).squeeze(1)
         loss = criterion(outputs, targets)
 
         # Perfomance 
@@ -134,11 +136,16 @@ def eval_fn(data_loader, model, criterion, device):
                 token_type_ids=token_type_ids
             )
             
+            # Monitor Loss and Accy
             loss = criterion(outputs, targets)
             test_loss += loss.item()
             _, predicted = outputs.max(1)
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
+            
+            # Accumalate all epoch tensors to compute ROC_AUC_SCORE
+            fin_targets.extend(targets.cpu().detach().numpy().tolist())
+            fin_outputs.extend(torch.sigmoid(outputs).cpu().detach().numpy().tolist())
 
     test_accy = 100.*correct/total
-    return test_loss, test_accy
+    return test_loss, test_accy, (fin_outputs, fin_targets)
