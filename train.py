@@ -14,8 +14,8 @@ if config.TPUs:
     import torch_xla.core.xla_model as xm
 
 
-def loss_fn(outputs, targets):
-    return nn.BCEWithLogitsLoss()(outputs, targets.view(-1, 1))
+# def loss_fn(outputs, targets):
+#     return nn.BCEWithLogitsLoss()(outputs, targets.view(-1, 1))
 
 
 def forward_pass(model, ids, mask, token_type_ids):
@@ -36,7 +36,7 @@ def forward_pass(model, ids, mask, token_type_ids):
     return None
     
 
-def train_fn(data_loader, model, optimizer, device, scheduler):
+def train_fn(data_loader, model, optimizer, criterion, device, scheduler):
     '''
     Train 1 epoch
 
@@ -44,6 +44,7 @@ def train_fn(data_loader, model, optimizer, device, scheduler):
         - data_loader: PyTorch DataLoader  for Training set
         - model: PyTorch Model instance
         - optimizer: PyTorch Optim instance
+        - criterion: Loss Function
         - device: Hardward for deployment
         - scheduler: PyTorch learning rate Scheduler instance
 
@@ -51,6 +52,8 @@ def train_fn(data_loader, model, optimizer, device, scheduler):
         - None
     '''
     model.train()
+    train_loss = 0
+    total = correct = 0
 
     for batch_id, data in tqdm(enumerate(data_loader), total=len(data_loader)):
         
@@ -71,15 +74,16 @@ def train_fn(data_loader, model, optimizer, device, scheduler):
 
         # Forward Pass
         outputs = forward_pass(model, ids, mask, token_type_ids)
+        loss = criterion(outputs, targets)
 
         # Perfomance 
+        train_loss += loss.item()
         _, predicted = outputs.max(1)
         total += targets.size(0)
         correct += predicted.eq(targets).sum().item()
         
         
         # Backward Pass
-        loss = loss_fn(outputs, targets)
         loss.backward()
 
         if config.TPUs:
@@ -88,10 +92,11 @@ def train_fn(data_loader, model, optimizer, device, scheduler):
             optimizer.step()
         scheduler.step()
 
-        return loss
+    train_accy = 100.*correct/total
+    return train_loss, train_accy
 
 
-def eval_fn(data_loader, model, device):
+def eval_fn(data_loader, model, criterion, device):
     '''
     Evaluate 1 epoch
 
@@ -105,9 +110,13 @@ def eval_fn(data_loader, model, device):
         - fin_targets: Ground truth (torch.Tensor)
     '''
     model.eval()
+    test_loss = 0
+    total = correct = 0
+
     fin_targets = []
     fin_outputs = []
     with torch.no_grad():
+
         for batch_id, data in tqdm(enumerate(data_loader), total=len(data_loader)):
             ids = data["ids"]
             token_type_ids = data["token_type_ids"]
@@ -124,7 +133,12 @@ def eval_fn(data_loader, model, device):
                 mask=mask,
                 token_type_ids=token_type_ids
             )
-            fin_targets.extend(targets.cpu().detach().numpy().tolist())
-            fin_outputs.extend(torch.sigmoid(outputs).cpu().detach().numpy().tolist())
+            
+            loss = criterion(outputs, targets)
+            test_loss += loss.item()
+            _, predicted = outputs.max(1)
+            total += targets.size(0)
+            correct += predicted.eq(targets).sum().item()
 
-    return fin_outputs, fin_targets
+    test_accy = 100.*correct/total
+    return test_loss, test_accy

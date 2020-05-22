@@ -139,6 +139,7 @@ def run():
         num_train_steps /= n_TPUs
         lr *= n_TPUs
 
+    criterion = nn.CrossEntropyLoss() ## TODO: Test Cross Entrypo
     optimizer = AdamW(optimizer_parameters, lr=lr)
     scheduler = get_linear_schedule_with_warmup(
         optimizer,
@@ -162,17 +163,21 @@ def run():
         if config.TPUs:
             train_loader = pl.ParallelLoader(train_data_loader, [device])
             valid_loader = pl.ParallelLoader(valid_data_loader, [device])
-            train_fn(train_loader.per_device_loader(device), model, optimizer, device, scheduler)
+            tr_loss, tr_accy = train_fn(train_loader.per_device_loader(device), model, optimizer, device, scheduler)
             outputs, targets = eval_fn(valid_loader.per_device_loader(device), model, device)
 
         else:
-            train_fn(train_data_loader, model, optimizer, device, scheduler)
-            outputs, targets = eval_fn(valid_data_loader, model, device)
+            tr_loss, tr_accy = train_fn(train_data_loader, model, optimizer, criterion, device, scheduler)
+            outputs, targets = eval_fn(valid_data_loader, model, criterion, device)
         
         targets = np.array(targets) >= 0.5 # TODO: why ?
         auc_score = metrics.roc_auc_score(targets, outputs)
 
         delta = time.time() - start
+        results.train_loss.append(tr_loss)
+        results.train_accy.append(tr_accy)
+        results.valid_accy.append(tr_loss)
+        results.valid_accy.append(tr_loss)
             
         # Save if best
         print(f"AUC Score = {auc_score}")
