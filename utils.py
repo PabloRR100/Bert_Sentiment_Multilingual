@@ -29,3 +29,16 @@ def print_current_config(CUDA, N_GPU, DEVICE, WORKERS):
     table.append_row(['Device', str(DEVICE_NAME)])
     print('Environment Settings')
     print(table)
+
+
+
+class Results(object):
+    
+    def __init__(self, name=None):
+        self.name = name                
+        self.time = list()
+        self.epoch = list()
+        self.train_loss = list()
+        self.train_accy = list()
+        self.valid_loss = list()
+        self.valid_accy = list()

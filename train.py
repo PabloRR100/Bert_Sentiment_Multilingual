@@ -53,6 +53,7 @@ def train_fn(data_loader, model, optimizer, device, scheduler):
     model.train()
 
     for batch_id, data in tqdm(enumerate(data_loader), total=len(data_loader)):
+        
         ids = data["ids"]
         token_type_ids = data["token_type_ids"]
         mask = data["mask"]
@@ -71,14 +72,23 @@ def train_fn(data_loader, model, optimizer, device, scheduler):
         # Forward Pass
         outputs = forward_pass(model, ids, mask, token_type_ids)
 
+        # Perfomance 
+        _, predicted = outputs.max(1)
+        total += targets.size(0)
+        correct += predicted.eq(targets).sum().item()
+        
+        
         # Backward Pass
         loss = loss_fn(outputs, targets)
         loss.backward()
+
         if config.TPUs:
             xm.optimizer.step()
         else:
             optimizer.step()
         scheduler.step()
+
+        return loss
 
 
 def eval_fn(data_loader, model, device):

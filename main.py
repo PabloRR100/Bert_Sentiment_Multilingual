@@ -1,10 +1,11 @@
 
+import time
 import torch
 import config
 import dataset
 from train import train_fn, eval_fn
-from utils import print_current_config
 from beautifultable import BeautifulTable as BT
+from utils import print_current_config, Results
 
 import numpy as np
 import pandas as pd
@@ -152,9 +153,12 @@ def run():
     # Training loop
 
     best_score = 0
+    results = Results()
     
     for epoch in range(config.EPOCHS):
-    
+        
+        start = time.time()
+
         if config.TPUs:
             train_loader = pl.ParallelLoader(train_data_loader, [device])
             valid_loader = pl.ParallelLoader(valid_data_loader, [device])
@@ -167,6 +171,8 @@ def run():
         
         targets = np.array(targets) >= 0.5 # TODO: why ?
         auc_score = metrics.roc_auc_score(targets, outputs)
+
+        delta = time.time() - start
             
         # Save if best
         print(f"AUC Score = {auc_score}")

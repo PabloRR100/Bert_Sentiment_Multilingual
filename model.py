@@ -13,6 +13,7 @@ class BERTBaseUncased(nn.Module):
 
     def __init__(self):
         super(BERTBaseUncased, self).__init__()
+        # TODO: Freeze Bert Layers and Test Performance of just the Dense Layer
         self.bert = transformers.BertModel.from_pretrained(config.BERT_PATH)
         self.bert_drop = nn.Dropout(0.3)
         self.out = nn.Linear(2*768, 1)
@@ -30,7 +31,6 @@ class BERTBaseUncased(nn.Module):
         output = self.out(bo)
         return output
 
-
     
 class DistilBERTBaseUncased(nn.Module):
 
@@ -40,7 +40,7 @@ class DistilBERTBaseUncased(nn.Module):
         self.bert_drop = nn.Dropout(0.3)
         self.out = nn.Linear(2*768, 1)
     
-    def forward(self, ids, mask, token_type_ids):
+    def forward(self, ids, mask):
         o1, _ = self.bert(
             ids, 
             attention_mask=mask
