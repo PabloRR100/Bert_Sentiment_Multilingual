@@ -3,7 +3,7 @@ transformers==2.9.0
 pandas==1.0.0
 matplotlib==3.1.2
 jupyter==1.0.0
-jupyterlab==1.2.3
+jupyterlab==1.2.21
 ipywidgets>=7.5
 scikit-learn==0.22
 beautifultable==0.7.0
